@@ -1,5 +1,7 @@
 #!/usr/bin/bash
 Databases="databases"
+source ./scripts/functions
+source ./scripts/table_operations
 # Function to create a database
 create_DB() {
     echo -n "Enter database name: "
@@ -44,6 +46,7 @@ connect_DBS() {
     if [[ -d "$Databases/$db_name" ]]
      then
         zenity --notification --text="Connected to database '$db_name'"
+        cd $Databases/$db_name
         while true
          do
          Db_options=$(zenity --list --title="$selected_db" --column="options" \
