@@ -4,23 +4,22 @@ source ./scripts/functions
 source ./scripts/table_operations
 # Function to create a database
 create_DB() {
-    echo -n "Enter database name: "
-    read DBname
+     DBname=$(zenity --entry --text="Enter database name")
     if [[ -z "$DBname" ]]
      then
-        echo "Database name cannot be empty!"
+        zenity --error --text="Database name cannot be empty!"
         return
     elif [[ "$DBname" =~ ^[0-9]+$ ]]
      then
-        echo "Database name cannot consist of numbers only!"
+        zenity --error --text="Database name cannot consist of numbers only!"
         return
     fi
     if [[ -d "$Databases/$DBname" ]]
      then
-        echo "Database '$DBname' already exists!"
+        zenity --warning --text="Database '$DBname' already exists!"
     else
         mkdir -p "$Databases/$DBname"
-        echo "Database '$DBname' created successfully!"
+        zenity --notification --text="Database '$DBname' created successfully!"
     fi
 }
 
@@ -28,10 +27,10 @@ create_DB() {
 list_DBS() {
     if [[ -d "$Databases" ]]
      then
-        echo "Databases:"
-        ls "$Databases"
+        options=$(ls "$Databases")
+        zenity --list --title="Databases" --column="Databases" $options
     else
-        echo "No databases exist yet!"
+        zenity --error --text="No databases exist yet!"
     fi
 }
 # Function to connect to a database
@@ -96,21 +95,19 @@ delete_db() {
 # vehrkhfd
 while true
  do
-    echo "Main Menu:"
-    echo "1. Create Database"
-    echo "2. List Databases"
-    echo "3. Connect to Database"
-    echo "4. Drop Database"
-    echo "5. Exit"
-    echo -n "Choose an option: "
-    read choice
-    case $choice in
-        1) create_DB ;;
-        2) list_DBS ;;
-        3) connect_DBS ;;
-        4) delete_db ;;
-        5) echo "Exiting...";
-         break ;;
+    selected=$(zenity --list --title="Main Menu" --column="Options" \
+        "Create Database" \
+        "List Databases" \
+        "Connect to Database" \
+        "Drop Database" \
+        "Exit"
+        )
+    case $selected in
+        "Create Database") create_DB ;;
+        "List Databases") list_DBS ;;
+        "Connect to Database") connect_DBS ;;
+        "Drop Database") delete_db ;;
+        "Exit") break ;;
         *) echo "Invalid option!" ;;
     esac
 done

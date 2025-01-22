@@ -1,9 +1,10 @@
 #!/bin/bash
 create_table() {
     Tb_name=$(zenity --entry --text="Please Enter Table Name")
-                		if [[ -z $Tb_name ]]
+                		if [[ -z $Tb_name || $Tb_name =~ ^[" "]+$ ]]
                 		then
-                			zenity --error --text="Please Enter Table Name"
+                			zenity --error --text="Table Name Can't be Empty"
+                            return
                 		fi
                 		if [[ -e $Tb_name ]]
                 		then
@@ -27,7 +28,12 @@ create_table() {
 		        			while true
 		        			do
 		        			colname=$(zenity --entry --text="Please enter column $((i+1)) Name")
-		        			if [[ -z $colname ]]
+                            if [[ $(cat .$Tb_name-metadata 2> /dev/null | cut -d: -f1 | grep -w $colname 2> /dev/null) ]]
+                            then
+                                zenity --error --text="Column $colname already exists"
+                                continue
+                            fi
+		        			if [[ -z $colname || $colname =~ ^[" "]+$ ]]
 		        			then
 		        				zenity --warning --text="Column Name Can't be Empty"
 		        				continue
@@ -71,5 +77,41 @@ create_table() {
                 			done
                 			touch $Tb_name
                 			zenity --notification --text="Table $Tb_name created"
+                		fi
+}
+
+drop_table() {
+    Tb_name=$(zenity --entry --text="Please Enter Table Name")
+                		if [[ -z $Tb_name || $Tb_name =~ ^[" "]+$ ]]
+                		then
+                			zenity --error --text="Table Name Can't be Empty"
+                		else
+                			if [[ -e $Tb_name ]]
+                			then
+                				rm $Tb_name
+                				rm .$Tb_name-metadata
+                				zenity --notification --text="Table $Tb_name Dropped"
+                			else
+                				zenity --error --text="Table $Tb_name doesn't exist"
+                			fi
+                		fi
+}
+
+
+select_from_table() {
+
+    Tb_name=$(zenity --entry --text="Please Enter Table Name")
+                		if [[ -z $Tb_name || $Tb_name =~ ^[" "]+$ ]]
+                		then
+                			zenity --error --text="Table Name Can't be Empty"
+                		else
+                			if [[ -e $Tb_name ]]
+                			then
+                				zenity --notification --text="Table $Tb_name Selected"
+                				columns=$(awk -F: '{print $1}' .$Tb_name-metadata)
+                                
+                			else
+                				zenity --error --text="Table $Tb_name doesn't exist"
+                			fi
                 		fi
 }

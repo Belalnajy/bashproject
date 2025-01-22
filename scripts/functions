@@ -17,3 +17,14 @@ isChar() {
         return 0
     fi
 }
+
+isEmpty() {
+
+    if [[ $1 =~ ^[" "]+$ || -z $1 ]]; then
+        zenity --warning --text="Please Enter Valid Name"
+        return 1
+    else
+        return 0
+    fi
+}
+
