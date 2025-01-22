@@ -1,22 +1,55 @@
 #!/usr/bin/bash
-# A simple databases management system using Bash Shell
-echo welcome to DBMS
-# Directory to store databases
-DataBase="databases"
-create_database() {
+Databases="databases"
+# Function to create a database
+create_DB() {
     echo -n "Enter database name: "
-    read dbname
-    if [[ -z "$DataBase" ]]
+    read DBname
+    if [[ -z "$DBname" ]]
      then
         echo "Database name cannot be empty!"
         return
-    fi
-    if [[ -d "$DataBase/$dbname" ]]
+    elif [[ "$DBname" =~ ^[0-9]+$ ]]
      then
-        echo "Database '$dbname' already exists!"
+        echo "Database name cannot consist of numbers only!"
+        return
+    fi
+    if [[ -d "$Databases/$DBname" ]]
+     then
+        echo "Database '$DBname' already exists!"
     else
-        mkdir -p "$DataBase/$dbname"
-        echo "Database '$dbname' created successfully!"
+        mkdir -p "$Databases/$DBname"
+        echo "Database '$DBname' created successfully!"
     fi
 }
 
+# Function to list all databases
+list_DBS() {
+    if [[ -d "$Databases" ]]
+     then
+        echo "Databases:"
+        ls "$Databases"
+    else
+        echo "No databases exist yet!"
+    fi
+}
+# Main Menu
+while true
+ do
+    echo "Main Menu:"
+    echo "1. Create Database"
+    echo "2. List Databases"
+    echo "3. Connect to Database"
+    echo "4. Drop Database"
+    echo "5. Exit"
+    echo -n "Choose an option: "
+    read choice
+    case $choice in
+        1) create_DB ;;
+        2) list_DBS ;;
+        3) connect_DBS ;;
+        4) drop_DB ;;
+        5) echo "Exiting...";
+         break ;;
+        *) echo "Invalid option!" ;;
+    esac
+done
