@@ -1,4 +1,4 @@
-    #!/usr/bin/bash
+#!/usr/bin/bash
     Databases="databases"
     source ./scripts/functions
     source ./scripts/table_operations
