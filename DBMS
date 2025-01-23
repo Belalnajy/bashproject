@@ -66,7 +66,9 @@
                     "Select From Table") select_from_table ;;
                     "Delete From Table") delete_from_table ;;
                     "Update Table") update_table ;;
-                    "Back") break ;;
+                    "Back") 
+                    cd ../..
+                    break ;;
                     *) echo "Invalid option!" ;;
                 esac
             done

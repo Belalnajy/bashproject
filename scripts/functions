@@ -27,4 +27,3 @@ isEmpty() {
         return 0
     fi
 }
-
