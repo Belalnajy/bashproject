@@ -1,113 +1,115 @@
-#!/usr/bin/bash
-Databases="databases"
-source ./scripts/functions
-source ./scripts/table_operations
-# Function to create a database
-create_DB() {
-     DBname=$(zenity --entry --text="Enter database name")
-    if [[ -z "$DBname" ]]
-     then
-        zenity --error --text="Database name cannot be empty!"
-        return
-    elif [[ "$DBname" =~ ^[0-9]+$ ]]
-     then
-        zenity --error --text="Database name cannot consist of numbers only!"
-        return
-    fi
-    if [[ -d "$Databases/$DBname" ]]
-     then
-        zenity --warning --text="Database '$DBname' already exists!"
-    else
-        mkdir -p "$Databases/$DBname"
-        zenity --notification --text="Database '$DBname' created successfully!"
-    fi
-}
+    #!/usr/bin/bash
+    Databases="databases"
+    source ./scripts/functions
+    source ./scripts/table_operations
+    # Function to create a database
+    create_DB() {
+        DBname=$(zenity --entry --text="Enter database name")
+        if [[ -z "$DBname" ]]
+        then
+            zenity --error --text="Database name cannot be empty!"
+            return
+        elif [[ "$DBname" =~ ^[0-9]+$ ]]
+        then
+            zenity --error --text="Database name cannot consist of numbers only!"
+            return
+        fi
+        if [[ -d "$Databases/$DBname" ]]
+        then
+            zenity --warning --text="Database '$DBname' already exists!"
+        else
+            mkdir -p "$Databases/$DBname"
+            zenity --notification --text="Database '$DBname' created successfully!"
+        fi
+    }
 
-# Function to list all databases
-list_DBS() {
-    if [[ -d "$Databases" ]]
-     then
-        options=$(ls "$Databases")
-        zenity --list --title="Databases" --column="Databases" $options
-    else
-        zenity --error --text="No databases exist yet!"
-    fi
-}
-# Function to connect to a database
-connect_DBS() {
-    db_name=$(zenity --entry --text="please enter the database name")
-    if [[ -z "$db_name" || "$db_name" =~ ^[" "]+$ ]]
-    then
-        zenity --error --text="Database name cannot be empty!"
-        pwd
-        return
-    fi
-    if [[ -d "$Databases/$db_name" ]]
-     then
-        zenity --notification --text="Connected to database '$db_name'"
-        cd $Databases/$db_name
-        while true
-         do
-         Db_options=$(zenity --list --title="$selected_db" --column="options" \
-                "Create Table" \
-                "List Tables" \
-                "Drop Table" \
-                "Insert Into Table" \
-                "Select From Table" \
-                "Delete From Table" \
-                "Update Table" \
-                "Back"
-                )
-            case $Db_options in
-                "Create Table") create_table ;;
-                "List Tables") list_tables ;;
-                "Drop Table") drop_table ;;
-                "Insert Into Table") insert_into_table ;;
-                "Select From Table") select_from_table ;;
-                "Delete From Table") delete_from_table ;;
-                "Update Table") update_table ;;
-                "Back") break ;;
-                *) echo "Invalid option!" ;;
-            esac
-        done
-    else
-        echo "Database '$db_name' does not exist!"
-    fi
-}
+    # Function to list all databases
+    list_DBS() {
+        if [[ -d "$Databases" ]]
+        then
+            options=$(ls "$Databases")
+            zenity --list --title="Databases" --column="Databases" $options
+        else
+            zenity --error --text="No databases exist yet!"
+        fi
+    }
+    # Function to connect to a database
+    connect_DBS() {
+        db_name=$(zenity --entry --text="please enter the database name")
+        if [[ -z "$db_name" || "$db_name" =~ ^[" "]+$ ]]
+        then
+            zenity --error --text="Database name cannot be empty!"
+            pwd
+            return
+        fi
+        if [[ -d "$Databases/$db_name" ]]
+        then
+            zenity --notification --text="Connected to database '$db_name'"
+            cd $Databases/$db_name
+            while true
+            do
+            Db_options=$(zenity --list --title="$selected_db" --column="options" \
+                    "Create Table" \
+                    "List Tables" \
+                    "Drop Table" \
+                    "Insert Into Table" \
+                    "Select From Table" \
+                    "Delete From Table" \
+                    "Update Table" \
+                    "Back"
+                    )
+                case $Db_options in
+                    "Create Table") create_table ;;
+                    "List Tables") list_tables ;;
+                    "Drop Table") drop_table ;;
+                    "Insert Into Table") insert_into_table ;;
+                    "Select From Table") select_from_table ;;
+                    "Delete From Table") delete_from_table ;;
+                    "Update Table") update_table ;;
+                    "Back") break ;;
+                    *) echo "Invalid option!" ;;
+                esac
+            done
+        else
+            echo "Database '$db_name' does not exist!"
+        fi
+    }
 
-# Function to delete a database
-delete_db() {
-    local options selected_db
-    options=$(ls $Databases 2>/dev/null)
-    if [[ -z "$options" ]]; then
-        zenity --error --text="No databases available to delete."
-        return
-    fi
-    selected_db=$(zenity --list --title="Delete Database" --column="Databases" $options)
-    if [[ -n "$selected_db" ]]; then
-        pwd
-        rm -rf "$Databases/$selected_db"
-        zenity --notification --text="Database $selected_db deleted successfully."
-    fi
-}
 
-# Main Menu
-# vehrkhfd
-while true
- do
-    selected=$(zenity --list --title="Main Menu" --column="Options" \
-        "Create Database" \
-        "List Databases" \
-        "Connect to Database" \
-        "Drop Database" \
-        "Exit"
-        )
-    case $selected in
-        "Create Database") create_DB ;;
-        "List Databases") list_DBS ;;
-        "Connect to Database") connect_DBS ;;
-        "Drop Database") delete_db ;;
-        "Exit") break ;;
-        *) echo "Invalid option!" ;;
-    esac
-done
+    # Function to delete a database
+    delete_db() {
+        local options selected_db
+        options=$(ls $Databases 2>/dev/null)
+        if [[ -z "$options" ]]; then
+            zenity --error --text="No databases available to delete."
+            return
+        fi
+        selected_db=$(zenity --list --title="Delete Database" --column="Databases" $options)
+        if [[ -n "$selected_db" ]]; then
+            pwd
+            rm -rf "$Databases/$selected_db"
+            zenity --notification --text="Database $selected_db deleted successfully."
+        fi
+    }
+
+  
+
+    # Main Menu
+    while true
+    do
+        selected=$(zenity --list --title="Main Menu" --column="Options" \
+            "Create Database" \
+            "List Databases" \
+            "Connect to Database" \
+            "Drop Database" \
+            "Exit"
+            )
+        case $selected in
+            "Create Database") create_DB ;;
+            "List Databases") list_DBS ;;
+            "Connect to Database") connect_DBS ;;
+            "Drop Database") delete_db ;;
+            "Exit") break ;;
+            *) echo "Invalid option!" ;;
+        esac
+    done
