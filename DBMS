@@ -110,7 +110,10 @@
             "List Databases") list_DBS ;;
             "Connect to Database") connect_DBS ;;
             "Drop Database") delete_db ;;
-            "Exit") break ;;
+            "Exit")
+             zenity --info --text="Goodbye!"
+             break 
+             ;;
             *) zenity --error --text="Invalid option!" ;;
         esac
     done
