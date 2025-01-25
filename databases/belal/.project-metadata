@@ -1,4 +1,0 @@
-id:int:pk
-name:char:
-hours:int:
-ssn:int:

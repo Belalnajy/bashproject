@@ -5,7 +5,7 @@
     # Function to create a database
     create_DB() {
         DBname=$(zenity --entry --text="Enter database name")
-        if [[ -z "$DBname" ]]
+        if [[ -z "$DBname" || "$DBname" =~ ^[" "]+$ ]]
         then
             zenity --error --text="Database name cannot be empty!"
             return
@@ -39,7 +39,6 @@
         if [[ -z "$db_name" || "$db_name" =~ ^[" "]+$ ]]
         then
             zenity --error --text="Database name cannot be empty!"
-            pwd
             return
         fi
         if [[ -d "$Databases/$db_name" ]]
@@ -69,11 +68,11 @@
                     "Back") 
                     cd ../..
                     break ;;
-                    *) echo "Invalid option!" ;;
+                    *) zenity --error --text="Invalid option!" ;;
                 esac
             done
         else
-            echo "Database '$db_name' does not exist!"
+            zenity --error --text="Database '$db_name' does not exist!"
         fi
     }
 
@@ -112,6 +111,6 @@
             "Connect to Database") connect_DBS ;;
             "Drop Database") delete_db ;;
             "Exit") break ;;
-            *) echo "Invalid option!" ;;
+            *) zenity --error --text="Invalid option!" ;;
         esac
     done
