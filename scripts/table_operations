@@ -130,6 +130,20 @@ insert_into_table() {
     primary_key=$(awk -F: '/pk/{print $1}' $metadata_file)
     row_data=()
 
+    # Find the index of the primary key column
+    primary_key_index=-1
+    for i in "${!columns[@]}"; do
+        if [[ ${columns[$i]} == $primary_key ]]; then
+            primary_key_index=$i
+            break
+        fi
+    done
+
+    if [[ $primary_key_index -eq -1 ]]; then
+        zenity --error --text="Primary key column not found in metadata"
+        return
+    fi
+
     for ((i = 0; i < ${#columns[@]}; i++)); do
         column_name=${columns[$i]}
         data_type=${data_types[$i]}
@@ -154,7 +168,8 @@ insert_into_table() {
             fi
 
             if [[ $column_name == $primary_key ]]; then
-                if grep -q "^$data:" $Tb_name; then
+                if awk -F: -v pk_index=$((primary_key_index + 1)) -v pk_value="$data" \
+                   '$pk_index == pk_value' "$Tb_name" | grep -q .; then
                     zenity --error --text="Primary key '$data' already exists in the table."
                     continue
                 fi
@@ -167,7 +182,7 @@ insert_into_table() {
 
     # Join the row data with a colon (:) separator and append it to the table file
     row=$(IFS=:; echo "${row_data[*]}")
-    echo "$row" >> $Tb_name
+    echo "$row" >> "$Tb_name"
 
     # Notify the user that the data was inserted successfully
     zenity --notification --text="Data inserted into table '$Tb_name' successfully!"
@@ -229,7 +244,7 @@ select_from_table() {
         IFS=':' read -r -a row <<< "$line"
         row_data=""
         for index in "${selected_indices[@]}"; do
-            row_data+="${row[$index]}\t"
+            row_data+="${row[$index]}\t\t"
         done
         row_data=${row_data%$'\t'}  
         output+="$row_data\n"
@@ -238,7 +253,6 @@ select_from_table() {
     if [[ -z $output ]]; then
         zenity --error --text="No data found in the table"
     else
-        # Display the data in a tabular format with column names
         zenity --info --title="Data from Table '$Tb_name'" --text="$(echo -e "$output")" --width=400 --height=200
     fi
 
@@ -266,6 +280,7 @@ delete_from_table() {
     columns=($(cut -d: -f1 $metadata_file))
     data_types=($(cut -d: -f2 $metadata_file))
     primary_key=$(awk -F: '/pk/{print $1}' $metadata_file)
+    primary_key_index=$(awk -F: "/^$primary_key:/"'{print NR}' $metadata_file)
 
     # Display the primary key column for the user to enter the value to delete
     while true; do
@@ -275,18 +290,27 @@ delete_from_table() {
             continue
         fi
 
-        if grep -q "^$primary_key_value:" $Tb_name; then
-            sed -i "/^$primary_key_value:/d" $Tb_name
-            zenity --notification --text="Row with primary key '$primary_key_value' deleted successfully"
-            break
+       if awk -F: -v pk_index="$primary_key_index" -v pk_value="$primary_key_value" \
+        'BEGIN {found=0} 
+        {if ($pk_index == pk_value) {found=1; exit 0}} 
+        END {if (!found) exit 1}' "$Tb_name"; then
+
+        echo "Found"
+    
+        awk -F: -v pk_index="$primary_key_index" -v pk_value="$primary_key_value" \
+        '
+         $pk_index != pk_value {print $0} 
+        ' "$Tb_name" > temp && mv temp "$Tb_name"
+
+        zenity --notification --text="Row with primary key '$primary_key_value' deleted successfully"
+        break
         else
-            zenity --error --text="Primary key value '$primary_key_value' not found in the table"
+        zenity --error --text="Primary key value '$primary_key_value' not found in the table"
         fi
     done
 }
 
 update_table() {
-    
     Tb_name=$(zenity --entry --text="Please Enter Table Name")
     if [[ -z $Tb_name || $Tb_name =~ ^[" "]+$ ]]; then
         zenity --error --text="Table Name Can't Be Empty"
@@ -308,6 +332,20 @@ update_table() {
     data_types=($(cut -d: -f2 $metadata_file))
     primary_key=$(awk -F: '/pk/{print $1}' $metadata_file)
 
+    # Find the index of the primary key column
+    primary_key_index=-1
+    for i in "${!columns[@]}"; do
+        if [[ ${columns[$i]} == $primary_key ]]; then
+            primary_key_index=$i
+            break
+        fi
+    done
+
+    if [[ $primary_key_index -eq -1 ]]; then
+        zenity --error --text="Primary key column not found in metadata"
+        return
+    fi
+
     # Display the primary key column for the user to enter the value to update
     while true; do
         primary_key_value=$(zenity --entry --text="Enter the value of the primary key ($primary_key):")
@@ -316,9 +354,15 @@ update_table() {
             continue
         fi
 
-        if grep -q "^$primary_key_value:" $Tb_name; then
+        # Check if the primary key value exists in the table
+        if awk -F: -v pk_index=$((primary_key_index + 1)) -v pk_value="$primary_key_value" \
+           'BEGIN {found=0} 
+            {if ($pk_index == pk_value) {found=1; exit 0}} 
+            END {if (!found) exit 1}' "$Tb_name"; then
+
             # Get the row data for the primary key value
-            row_data=$(grep "^$primary_key_value:" $Tb_name)
+            row_data=$(awk -F: -v pk_index=$((primary_key_index + 1)) -v pk_value="$primary_key_value" \
+                       '$pk_index == pk_value' "$Tb_name")
             IFS=':' read -r -a row <<< "$row_data"
 
             # Display the row data for the user to update
@@ -348,7 +392,10 @@ update_table() {
                     fi
 
                     if [[ $column_name == $primary_key ]]; then
-                        if grep -q "^$new_value:" $Tb_name; then
+                        if awk -F: -v pk_index=$((primary_key_index + 1)) -v pk_value="$new_value" \
+                           'BEGIN {found=0} 
+                            {if ($pk_index == pk_value) {found=1; exit 0}} 
+                            END {if (!found) exit 1}' "$Tb_name"; then
                             zenity --error --text="Primary key '$new_value' already exists in the table."
                             continue
                         fi
@@ -363,7 +410,9 @@ update_table() {
             updated_row_data=$(IFS=:; echo "${updated_row[*]}")
 
             # Replace the old row data with the updated row data in the table
-            sed -i "s/^$primary_key_value:.*/$updated_row_data/" $Tb_name
+            awk -F: -v pk_index=$((primary_key_index + 1)) -v pk_value="$primary_key_value" -v new_row="$updated_row_data" \
+                'BEGIN {OFS=":"} 
+                 {if ($pk_index == pk_value) $0=new_row; print}' "$Tb_name" > temp && mv temp "$Tb_name"
 
             zenity --notification --text="Row with primary key '$primary_key_value' updated successfully"
             break
@@ -371,5 +420,4 @@ update_table() {
             zenity --error --text="Primary key value '$primary_key_value' not found in the table"
         fi
     done
-
 }

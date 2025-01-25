@@ -2,6 +2,5 @@
 #gui using zenity command
 
 
-insert ==> column name ==> check ==> data ==> datatype ==> pk != null == unique
+start by making DBMS script executable
 
-ischar should accept numbers right ?

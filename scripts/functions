@@ -10,7 +10,7 @@ isInt() {
 }
 
 isChar() {
-    if ! [[ ${1^^} =~ ^[A-Z]+$ ]]; then
+    if ! [[ ${1^^} =~ ^[A-Z0-9\ _]+$ ]]; then
         zenity --warning --text="Please Enter Valid Name"
         return 1
     else

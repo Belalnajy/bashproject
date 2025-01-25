@@ -1,0 +1,4 @@
+name:char:
+location:char:
+MGR:int:
+ID:int:pk

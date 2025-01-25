@@ -1,0 +1,3 @@
+deptName:char:
+deptID:int:pk
+deptMGR:char:
