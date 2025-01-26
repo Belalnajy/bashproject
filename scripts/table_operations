@@ -419,7 +419,7 @@ update_table() {
                         fi
                     fi
 
-                    if [[ $column_name == $primary_key ]]; then
+                    if [[ $column_name == $primary_key && $new_value != $primary_key_value ]]; then
                         if awk -F: -v pk_index=$((primary_key_index + 1)) -v pk_value="$new_value" \
                            'BEGIN {found=0} 
                             {if ($pk_index == pk_value) {found=1; exit 0}} 
