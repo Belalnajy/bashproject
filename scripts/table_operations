@@ -1,5 +1,24 @@
-#!/bin/bash
-    create_table() {
+#!/usr/bin/bash
+
+isInt() {
+    if [[ $1 =~ ^-?[0-9]+$ ]]; then #-?: Matches an optional minus sign (-) for negative integers.
+        return 0 
+    else
+        zenity --error --text="'$1' is not a valid integer."
+        return 1 
+    fi
+}
+
+isChar() {
+    if [[ $1 =~ ^[a-zA-Z]+$ ]]; then
+        return 0 
+    else
+        zenity --error --text="'$1' is not a valid character string."
+        return 1  
+    fi
+}
+
+create_table() {
         Tb_name=$(zenity --entry --text="Please Enter Table Name")
                             if [[ -z $Tb_name || $Tb_name =~ ^[" "]+$ ]]
                             then
@@ -78,8 +97,8 @@
                                 touch $Tb_name
                                 zenity --notification --text="Table $Tb_name created"
                             fi
-    }
-   list_tables() {
+}
+list_tables() {
     tables=$(ls -p | grep -v / | grep -v '^\.')
     #echo $tables
     metadata_files=$(ls -a | grep '^\.' | grep -v '^\.\.$' | grep -v '^\.$')
@@ -91,7 +110,7 @@
         zenity --list --title="Tables" --column="Tables" $tables
     fi
 }
-    drop_table() {
+drop_table() {
         Tb_name=$(zenity --entry --text="Please Enter Table Name")
                             if [[ -z $Tb_name || $Tb_name =~ ^[" "]+$ ]]
                             then
@@ -106,7 +125,7 @@
                                     zenity --error --text="Table $Tb_name doesn't exist"
                                 fi
                             fi
-    }
+}
 insert_into_table() {
     Tb_name=$(zenity --entry --text="Please Enter Table Name")
     if [[ -z $Tb_name || $Tb_name =~ ^[" "]+$ ]]; then
@@ -155,14 +174,18 @@ insert_into_table() {
                 continue
             fi
 
-            if [[ $data_type == "int" ]]; then
-                isInt "$data"
-                if [[ $? -ne 0 ]]; then
+            if [[ $data_type == "int" ]]
+             then
+                isInt $data
+                if [[ $? -ne 0 ]]
+                    then
                     continue
                 fi
-            elif [[ $data_type == "char" ]]; then
-                isChar "$data"
-                if [[ $? -ne 0 ]]; then
+            elif [[ $data_type == "char" ]]
+             then
+                isChar $data
+                if [[ $? -ne 0 ]]
+                 then
                     continue
                 fi
             fi

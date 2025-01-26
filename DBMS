@@ -1,9 +1,9 @@
 #!/usr/bin/bash
-    Databases="databases"
-    source ./scripts/functions
-    source ./scripts/table_operations
-    # Function to create a database
-    create_DB() {
+Databases="databases"
+source ./scripts/functions
+source ./scripts/table_operations
+# Function to create a database
+create_DB() {
         DBname=$(zenity --entry --text="Enter database name")
         if [[ -z "$DBname" || "$DBname" =~ ^[" "]+$ ]]
         then
@@ -21,10 +21,10 @@
             mkdir -p "$Databases/$DBname"
             zenity --notification --text="Database '$DBname' created successfully!"
         fi
-    }
+}
 
-    # Function to list all databases
-    list_DBS() {
+# Function to list all databases
+list_DBS() {
         if [[ -d "$Databases" ]]
         then
             options=$(ls "$Databases")
@@ -32,9 +32,9 @@
         else
             zenity --error --text="No databases exist yet!"
         fi
-    }
-    # Function to connect to a database
-    connect_DBS() {
+}
+# Function to connect to a database
+connect_DBS() {
         db_name=$(zenity --entry --text="please enter the database name")
         if [[ -z "$db_name" || "$db_name" =~ ^[" "]+$ ]]
         then
@@ -74,11 +74,10 @@
         else
             zenity --error --text="Database '$db_name' does not exist!"
         fi
-    }
+}
 
-
-    # Function to delete a database
-    delete_db() {
+# Function to delete a database
+delete_db() {
         local options selected_db
         options=$(ls $Databases 2>/dev/null)
         if [[ -z "$options" ]]; then
@@ -91,13 +90,13 @@
             rm -rf "$Databases/$selected_db"
             zenity --notification --text="Database $selected_db deleted successfully."
         fi
-    }
+}
 
   
 
-    # Main Menu
-    while true
-    do
+# Main Menu
+while true
+do
         selected=$(zenity --list --title="Main Menu" --column="Options" \
             "Create Database" \
             "List Databases" \
@@ -116,4 +115,4 @@
              ;;
             *) zenity --error --text="Invalid option!" ;;
         esac
-    done
+done
