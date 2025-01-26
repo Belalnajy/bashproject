@@ -217,7 +217,6 @@ insert_into_table() {
     zenity --notification --text="Data inserted into table '$Tb_name' successfully!"
 }
 select_from_table() {
-
     Tb_name=$(zenity --entry --text="Please Enter Table Name")
     if [[ -z $Tb_name || $Tb_name =~ ^[" "]+$ ]]; then
         zenity --error --text="Table Name Can't Be Empty"
@@ -259,31 +258,29 @@ select_from_table() {
         done
     done
 
-    # column name
-    header=""
+    # Create the headers for zenity --list
+    zenity_columns=()
     for column in "${selected_columns_array[@]}"; do
-        header+="$column\t"
+        zenity_columns+=("--column=$column")
     done
-    header=${header%$'\t'}  
 
-    # Read the table data and format it into rows
-    output="$header\n"
+    # Read the table data and collect rows based on the selected columns
+    zenity_data=()
     while IFS= read -r line; do
         IFS=':' read -r -a row <<< "$line"
-        row_data=""
+        row_data=()
         for index in "${selected_indices[@]}"; do
-            row_data+="${row[$index]}\t\t"
+            row_data+=("${row[$index]}")
         done
-        row_data=${row_data%$'\t'}  
-        output+="$row_data\n"
+        zenity_data+=("${row_data[@]}")
     done < "$Tb_name"
 
-    if [[ -z $output ]]; then
+    # Display the data in a zenity table
+    if [[ ${#zenity_data[@]} -eq 0 ]]; then
         zenity --error --text="No data found in the table"
     else
-        zenity --info --title="Data from Table '$Tb_name'" --text="$(echo -e "$output")" --width=400 --height=200
+        zenity --list --title="Data from Table '$Tb_name'" "${zenity_columns[@]}" "${zenity_data[@]}" --width=800 --height=400
     fi
-
 }
 
 delete_from_table() {

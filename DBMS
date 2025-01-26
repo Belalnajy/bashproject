@@ -65,6 +65,7 @@ connect_DBS() {
                       # Check if the user canceled or closed the dialog
     if [[ $? -ne 0 ]]; then
         zenity --info --text="Operation canceled."
+        cd ../..
         break
     fi
 
