@@ -27,3 +27,54 @@ isEmpty() {
         return 0
     fi
 }
+
+
+#for insert function
+checkInt() {
+    local value="$1"
+    local is_pk="$2"  #  true if this is a primary key column
+
+    # If the value is empty and it's not a primary key column, it's valid
+    if [[ -z $value && $is_pk == "false" ]]; then
+        return 0
+    fi
+
+    # Check if the value is a valid integer
+    if [[ $value =~ ^[0-9]+$ && $value =~ ^[^[:space:]]+$ ]]; then
+        return 0
+    else
+        if [[ $is_pk == "true" ]]; then
+            zenity --warning --text="Primary key value cannot be null and must be a valid integer."
+        else
+            zenity --warning --text="Value must be a valid integer or left empty."
+        fi
+        return 1
+    fi
+}
+checkChar() {
+    local value="$1"
+    local is_pk="$2"  
+
+    # If the value is empty and it's not a primary key column, it's valid
+    if [[ -z $value && $is_pk == "false" ]]; then
+        return 0
+    fi
+
+    # Check if the value contains only spaces
+    if [[ $value =~ ^[[:space:]]+$ ]]; then
+        zenity --warning --text="Input cannot contain only spaces."
+        return 1
+    fi
+
+    # Check if the value is a valid character string (letters, numbers, spaces, underscores)
+    if [[ ${value^^} =~ ^[A-Z0-9\ _]+$ ]]; then
+        return 0
+    else
+        if [[ $is_pk == "true" ]]; then
+            zenity --warning --text="Primary key value cannot be null and must be a valid name."
+        else
+            zenity --warning --text="Value must be a valid name or left empty."
+        fi
+        return 1
+    fi
+}

@@ -1,23 +1,4 @@
 #!/usr/bin/bash
-
-isInt() {
-    if [[ $1 =~ ^-?[0-9]+$ ]]; then #-?: Matches an optional minus sign (-) for negative integers.
-        return 0 
-    else
-        zenity --error --text="'$1' is not a valid integer."
-        return 1 
-    fi
-}
-
-isChar() {
-    if [[ $1 =~ ^[a-zA-Z]+$ ]]; then
-        return 0 
-    else
-        zenity --error --text="'$1' is not a valid character string."
-        return 1  
-    fi
-}
-
 create_table() {
         Tb_name=$(zenity --entry --text="Please Enter Table Name")
                             if [[ -z $Tb_name || $Tb_name =~ ^[" "]+$ ]]
@@ -128,6 +109,19 @@ drop_table() {
 }
 insert_into_table() {
     Tb_name=$(zenity --entry --text="Please Enter Table Name")
+    if [[ $? -ne 0 ]]; then
+        # User clicked Cancel
+        zenity --question --text="Are you sure you want to cancel?" --ok-label="Yes" --cancel-label="No"
+        if [[ $? -eq 0 ]]; then
+            zenity --info --text="Operation canceled by user."
+            return
+        else
+            # User chose not to cancel, restart the function
+            insert_into_table
+            return
+        fi
+    fi
+
     if [[ -z $Tb_name || $Tb_name =~ ^[" "]+$ ]]; then
         zenity --error --text="Table Name Can't Be Empty"
         return
@@ -169,27 +163,39 @@ insert_into_table() {
 
         while true; do
             data=$(zenity --entry --text="Enter value for '$column_name' ($data_type):")
-            if [[ -z $data ]]; then
-                zenity --error --text="Value for '$column_name' Cannot Be Empty"
-                continue
-            fi
-
-            if [[ $data_type == "int" ]]
-             then
-                isInt $data
-                if [[ $? -ne 0 ]]
-                    then
-                    continue
-                fi
-            elif [[ $data_type == "char" ]]
-             then
-                isChar $data
-                if [[ $? -ne 0 ]]
-                 then
+            if [[ $? -ne 0 ]]; then
+                # User clicked Cancel
+                zenity --question --text="Are you sure you want to cancel?" --ok-label="Yes" --cancel-label="No"
+                if [[ $? -eq 0 ]]; then
+                    zenity --info --text="Operation canceled by user."
+                    return
+                else
+                    # User chose not to cancel, continue entering data
                     continue
                 fi
             fi
 
+            # Check if the column is the primary key
+            if [[ $column_name == $primary_key ]]; then
+                is_pk="true"
+            else
+                is_pk="false"
+            fi
+
+            # Validate based on data type
+            if [[ $data_type == "int" ]]; then
+                isInt "$data" "$is_pk"
+                if [[ $? -ne 0 ]]; then
+                    continue
+                fi
+            elif [[ $data_type == "char" ]]; then
+                checkChar "$data" "$is_pk"
+                if [[ $? -ne 0 ]]; then
+                    continue
+                fi
+            fi
+
+            # Check for primary key uniqueness
             if [[ $column_name == $primary_key ]]; then
                 if awk -F: -v pk_index=$((primary_key_index + 1)) -v pk_value="$data" \
                    '$pk_index == pk_value' "$Tb_name" | grep -q .; then
@@ -210,7 +216,6 @@ insert_into_table() {
     # Notify the user that the data was inserted successfully
     zenity --notification --text="Data inserted into table '$Tb_name' successfully!"
 }
-
 select_from_table() {
 
     Tb_name=$(zenity --entry --text="Please Enter Table Name")
